@@ -6,11 +6,13 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-/*********************************************************************************************
-sp_blockedprocessreport v1.2 (2016-02-16)
-(C) 2016, Danilo Dominici
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME = 'sp_blockedprocessreport_alert')
+	EXEC ('CREATE PROC dbo.sp_blockedprocessreport_alert AS SELECT ''stub version, to be replaced''')
+GO
 
-Feedback: mailto:ddominici@gmail.com
+/*********************************************************************************************
+sp_blockedprocessreport_alert v0.3 (2016-02-16)
+(C) 2016, Danilo Dominici
 
 License: 
 [sp_blockedprocessreport_alert] is free to download and use for personal, educational, and internal 
@@ -19,35 +21,43 @@ written consent.
 
 Usage:
 	EXEC [dbo].[sp_blockedprocessreport_alert]
-		@send_notification = 0,
+		@send_notification = 1,
 		@start_date        = ',
 		@block_duration_ms = 10000,
 		@mail_profile      = 'mydatabasemailprofile',
 		@mail_recipients   = 'emailaddress@domain.com'
     
 *********************************************************************************************/
-ALTER PROC [dbo].[sp_blockedprocessreport]
+ALTER PROC [dbo].[sp_blockedprocessreport_alert]
 (
-    @send_notification  BIT = 0,
-    @start_date         DATETIME = NULL,
-    @block_duration_ms  INT = 10000,
-    @mail_profile       qVARCHAR(128) = NULL,
+    @send_notification  BIT           = 0,		-- just for test purpose. WIll be 1 in production mode.
+    @start_date         DATETIME      = NULL,
+    @block_duration_ms  INT           = 10000,
+    @mail_profile       VARCHAR(128)  = NULL,
     @mail_recipients    VARCHAR(1024) = NULL
 )
 AS
     SET NOCOUNT ON
+
+	DECLARE @bpr_threshold INT
     
     --
     -- ADJUST PARAMETERS
     --
 
-    -- Start date default to 1 hour, back in time
+    -- If @start_date is null, then sets it to 1 hour, back in time
     IF @start_date IS NULL SET @start_date = DATEADD(hour, -1, GETDATE())
 
-    -- sets the alert threshold
-    SELECT @block_duration_ms = CAST(value AS int) * 1000 
+    -- Checks if blocked process threshold is enabled
+    SELECT @bpr_threshold = CAST(value AS int) * 1000 
     FROM sys.configurations 
     WHERE name = 'blocked process threshold (s)'
+
+	IF (@bpr_threshold = 0)
+	BEGIN
+		RAISERROR (N'Blocking process report generation is disabled. Change the threshold value by changing the configuration parameter "blocked process threshold".', 16, 1);
+		RETURN
+	END
 
     -- Find default profile
     SELECT @mail_profile = name
