@@ -12,12 +12,6 @@ GO
 
 /*********************************************************************************************
 sp_blockedprocessreport_alert v0.3 (2016-02-16)
-(C) 2016, Danilo Dominici
-
-License: 
-[sp_blockedprocessreport_alert] is free to download and use for personal, educational, and internal 
-corporate purposes, provided that this header is preserved. Redistribution or sale, in whole or in part, is prohibited without the author's express 
-written consent.
 
 Usage:
 	EXEC [dbo].[sp_blockedprocessreport_alert]
