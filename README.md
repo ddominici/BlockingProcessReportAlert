@@ -14,7 +14,7 @@ You must have set up the Database Mail feature so that your SQL Server is able t
 
 2) Install the stored procedure by running the script sp_blockingprocessreport_alert.sql.
 
-3) Create the job and the schedule for it by running the script.
+3) Create the job and the schedule for it by running the script create_alert__job.sql.
 
 That's all! 
 
