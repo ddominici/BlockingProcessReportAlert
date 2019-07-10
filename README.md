@@ -1,5 +1,8 @@
 # BlockingProcessReportAlert
-The core of this project is the stored procedure usp_BlockedProcessAlert, that extract all the information from the XML blocked process report.
+
+Blocked process threshold uses the deadlock monitor background thread to walk through the list of tasks waiting for a time greater than or multiples of the configured threshold. The event is generated once per reporting interval for each of the blocked tasks.
+The blocked process report is done on a best effort basis. There is no guarantee of any real-time or even close to real-time reporting.
+This project reads the blocked process report, on selected interval basis, and sends a HTML email to the DBA.
 
 # Prerequisites
 
@@ -7,9 +10,9 @@ You must have set up the Database Mail feature so that your SQL Server is able t
 
 # Setup
 
-1) Change the ##Blocked Process Threshold## from the SQL Server instance options in SQL Server Management Studio. This option means that after the number of seconds you specified, SQL Server generates an XML that contains the required information to troubleshoot the blocking issue, reporting who is blocking and who is blocked by the first process. The default for this option is zero, which means that no blocked process report is generated at all. 
+1) Change the blocked process threshold option to specify the threshold, in seconds, at which blocked process reports are generated. The threshold can be set from 0 to 86,400. By default, no blocked process reports are produced. This event is not generated for system tasks or for tasks that are waiting on resources that do not generate detectable deadlocks.
 
-2) Install the stored procedure (by default in master database, but you can choose another database of your choice).
+2) Install the stored procedure by running the script usp_BlockedProcessReport.
 
 3) Create the job and the schedule for it by running the second script.
 
