@@ -61,8 +61,7 @@ BEGIN TRANSACTION
 		@active_start_date=20160216, 
 		@active_end_date=99991231, 
 		@active_start_time=0, 
-		@active_end_time=235959, 
-		@schedule_uid=N'e30adee9-ca3d-4b37-aa1a-f3c103fe4bfa'
+		@active_end_time=235959
 
 	IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
 
