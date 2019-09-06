@@ -39,7 +39,7 @@ AS
     -- ADJUST PARAMETERS
     --
 
-    -- If @start_date is null, then sets it to 1 hour, back in time
+    -- If @start_date is null, then sets it to -1 hour
     IF @start_date IS NULL SET @start_date = DATEADD(hour, -1, GETDATE())
 
     -- Checks if blocked process threshold is enabled
@@ -47,19 +47,30 @@ AS
     FROM sys.configurations 
     WHERE name = 'blocked process threshold (s)'
 
-	IF (@bpr_threshold = 0)
-	BEGIN
-		RAISERROR (N'Blocking process report generation is disabled. Change the threshold value by changing the configuration parameter "blocked process threshold".', 16, 1);
-		RETURN
-	END
+    IF (@bpr_threshold = 0)
+    BEGIN
+	RAISERROR (N'Blocking process report generation is disabled. Change the threshold value by changing the configuration parameter "blocked process threshold".', 16, 1);
+	RETURN
+    END
 
     -- Find default profile
     SELECT @mail_profile = name
     FROM msdb.dbo.sysmail_principalprofile pp
     INNER JOIN msdb.dbo.sysmail_profile p ON pp.profile_id = p.profile_id
     WHERE pp.is_default = 1
+						     
+    IF (@mail_profile IS NULL) OR (@mail_profile = '')
+    BEGIN
+	RAISERROR (N'No default Database Mail Profile found. Please configure Database Mail feature or set a default profile.', 16, 1);
+	RETURN
+    END
+						     
     -- Default to the author :)
-    IF @mail_recipients IS NULL SET @mail_recipients = 'ddominici@gmail.com'
+    IF (@send_notification = 1 AND @mail_recipients IS NULL)
+    BEGIN
+	RAISERROR (N'No email address found. Please provide a valid email address to send notificatios.', 16, 1);
+	RETURN
+    END
 
     --
     -- Extract blocked process report data from extended events file
